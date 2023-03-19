@@ -19,10 +19,10 @@ class pc2_instance:
         self.started = False
     
     def get_help(self):
-        print("To start 'Server' and 'Admin', enter 'start'")
-        print("To open any PC2 batch file, enter the name of the file \nwithout the leading 'PC2' and trailing '.bat' extension")
-        print("To end the script, enter 'exit'")
-        
+        print("Ensure that 'pc2_runner.py' is executed with administrator\naccess on a Windows OS\n\n")
+        print("To start 'Server' and 'Admin', enter 'start'\n")
+        print("To open any PC2 batch file, enter the name of the file \nwithout the leading 'PC2' and trailing '.bat' extension\n")
+        print("To end the script, enter 'exit'\n")
     
     def set_working_path(self, path_name):
         os.chdir(path_name)
@@ -38,7 +38,7 @@ class pc2_instance:
         admin_path = os.path.join(self.bin_path, 'pc2admin.bat')
         
         self.toggle_firewall()
-        self.yn_command(True,'netsh interface ip set address name="wi-Fi" static 192.168.1.2 255.255.255.0 192.168.1.2')
+        self.yn_command('netsh interface ip set address name="wi-Fi" static 192.168.1.2 255.255.255.0 192.168.1.2')
         
         self.server_proc = subprocess.Popen(
             (server_path),
@@ -63,7 +63,7 @@ class pc2_instance:
         else:
             print("Command '"+other+"' does not exist.")
         
-    def yn_command(self, admin, cmd):
+    def yn_command(self, cmd):
         done = False
         print("Running process '"+cmd+"'.")
         
@@ -72,7 +72,6 @@ class pc2_instance:
             response = input(">>> ").strip().lower()[0:1]
             match response:
                 case 'y':
-                    #subprocess.run(['cmd.exe','-command',"& {{Start-Process "+cmd+" -argumentlist '/k \"C:\WINDOWS\System32\WindowsPowerShell\\v1.0\"' -Verb Runas}}"])
                     subprocess.run(cmd)
                     print("Process executed.")
                     done = True
@@ -110,22 +109,7 @@ class pc2_instance:
                 done = True
             else:
                 print("Invalid response.")
-        
-    ''' FOR FUTURE IMPLEMENTATION (unfinished) (userdata.tsv only generated through client :c)
-    def get_pass(self, account, team_num):
-        if team_num not in self.open_teams:
-            print('Team', team_num ,'is not available.\nPlease choose a different team:')
-            for team in self.open_teams:
-                print('\tTeam',team) 
-        else:
-            userdata_path = os.path.join(self.bin_path, 'userdata.tsv')
-            with open(userdata_path) as fin:
-                for line in fin.readlines():
-                    user = tuple(line.strip().split())
-                    if user[0] == account and user[1] == team_num:
-                        print('Password:',user[-1])
-    '''
-    
+                
 
 def main():
     pc2i = pc2_instance()
@@ -139,7 +123,7 @@ def main():
                 pc2i.start_contest()
             case "exit":
                 if pc2i.started:
-                    pc2i.yn_command(True,'netsh interface ip set address name="wi-Fi" dhcp')
+                    pc2i.yn_command('netsh interface ip set address name="wi-Fi" dhcp')
                     pc2i.toggle_firewall()
                 print("'pc2_runner.py' terminated")
             case "/h":
