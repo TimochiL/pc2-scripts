@@ -1,3 +1,7 @@
+"""
+Scrapped 03.18.2023 11:57:52
+"""
+
 import os, sys, subprocess
 from datetime import date
 
@@ -13,6 +17,7 @@ class new_contest:
         self.pass_gen = False
         self.pass_list = ['0'] * 40
         
+        self.pc2lib2_dir = None
         
     def set_dir(self):
         directory = None
@@ -70,6 +75,7 @@ class new_contest:
     def create_contest(self):
         isDefault = True
         self.password_options()
+        self.run_pc2_cli()
         
     def password_options(self):
         optionIsSelected = False
@@ -185,6 +191,21 @@ class new_contest:
         fin = open(os.path.join(self.resource_dir,'problem_list.txt'),"w")
         fin.write()
     """
+    
+    def run_pc2_cli(self):
+        response = None
+        while response is None:
+            print("Enter full folder directory of 'pc2lib2-1.0.jar'.")
+            print("Enter 'default' for default directory at '"+self.working_dir+"'")
+            response = input('>>> ').strip()
+            if response == 'default':
+                response = self.working_dir
+            try:
+                subprocess.run('java -Djdk.crypto.KeyAgreement.legacyKDF=true -cp '+response+'\\pc2lib2-1.0.jar'+' com.lingfeishengtian.cli.CLIStarter')
+            except FileNotFoundError:
+                print("Incorrect directory '"+response+'\\pc2lib2-1.0.jar'+"'")
+                response = None
+        
 
 def main():
     contest = new_contest()

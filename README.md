@@ -32,3 +32,5 @@ Updated help message
 Unfinished version of pc2_maker. Making and entering problem list has yet to be implemented.<br>
 pc2_maker has path setting and team password options (generate, manual setting, use existing)<br>
 Have yet to run pc2lib2.cli through the script and create password txt
+
+Decided to scrap pc2_maker and fix the java gui already created
