@@ -25,6 +25,10 @@ def get_pass(self, account, team_num):
 
 Updated help message
 
+#### 03.24.2023
+
+Implemented transfer to contest ethernet ability.
+
 # pc2_maker
 
 #### 03.18.2023
