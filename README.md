@@ -1,43 +1,7 @@
-# pc2_runner
+# PC2 scripts version 0.0.4
 
-#### 03.17.2023 
+To ensure compatability, only use pc2_runner.py for pc2 version 9.6.0 contests
 
-First version of pc2_runner.py with pc2 automation of internet and firewall config and contest startup.
+"pc2_runner.py" script works in any directory under C:\ root as long as pc2-9.6.0 is properly created under directory tree c:\
 
-#### 03.18.2023 
-
-def get_pass FOR FUTURE IMPLEMENTATION (unfinished) (userdata.tsv only generated through client :c)
-
-```python
-def get_pass(self, account, team_num):
-    if team_num not in self.open_teams:
-        print('Team', team_num ,'is not available.\nPlease choose a different team:')
-        for team in self.open_teams:
-            print('\tTeam',team) 
-    else:
-        userdata_path = os.path.join(self.bin_path, 'userdata.tsv')
-        with open(userdata_path) as fin:
-            for line in fin.readlines():
-                user = tuple(line.strip().split())
-                if user[0] == account and user[1] == team_num:
-                    print('Password:',user[-1])
-```
-
-Updated help message
-
-#### 03.24.2023
-
-Implemented transfer to contest ethernet ability.
-
-Fixed ethernet transfer bugs
-Have yet to test transfer code with router
-
-# pc2_maker
-
-#### 03.18.2023
-
-Unfinished version of pc2_maker. Making and entering problem list has yet to be implemented.<br>
-pc2_maker has path setting and team password options (generate, manual setting, use existing)<br>
-Have yet to run pc2lib2.cli through the script and create password txt
-
-Decided to scrap pc2_maker and fix the java gui already created
+Run "pc2_runner.py" through cmd with administrator access

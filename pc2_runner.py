@@ -1,10 +1,3 @@
-'''
-Script works in any directory under C:\ root as long 
-as pc2-9.6.0 is properly created and in C:\ base
-
-run through cmd as admin
-'''
-
 import os
 import subprocess
 
