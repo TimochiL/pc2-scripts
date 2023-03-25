@@ -2,7 +2,6 @@
 Script works in any directory under C:\ root as long 
 as pc2-9.6.0 is properly created and in C:\ base
 
-only tested on localhost so far
 run through cmd as admin
 '''
 
@@ -19,13 +18,13 @@ class pc2_instance:
         self.started = False
         
         self.ether_is_connected = False
-        self.ether_port_name = ''
+        self.ether_full_name = ''
     
     def get_help(self):
         print("Ensure that 'pc2_runner.py' is executed with administrator\naccess on a Windows OS\n\n")
         print("To start 'Server' and 'Admin', enter 'start'\n")
         print("To open any PC2 batch file, enter the name of the file \nwithout the leading 'PC2' and trailing '.bat' extension\n")
-        print("To transfer contest from 'wi-Fi' to Ethernet connection,\nenter '/c ethernet'.")
+        print("To transfer contest from 'wi-Fi' to Ethernet connection,\nenter '/c ethernet'\n")
         print("To end the script, enter 'exit'\n")
     
     def set_working_path(self, path_name):
@@ -77,7 +76,7 @@ class pc2_instance:
             match response:
                 case 'y':
                     subprocess.run(cmd)
-                    print("Process executed.")
+                    print("Process executed.\n")
                     done = True
                 case 'n':
                     print("Cancelling call to '"+cmd+"'.")
@@ -115,83 +114,94 @@ class pc2_instance:
                 print("Invalid response.")
              
     def transfer_to_ethernet(self):
-        print('Connect Ethernet')
+        print('Ensure Ethernet is connected\n')
         done = False
-        validPort = False
+        valid_IP = False
+        
         while not done:
             print("Transfer contest onto 'Ethernet' connection [y/n]")
+            
             response = input('>>> ').strip().lower()
             match response:
                 case 'y':
-                    portName = self.check_ether_connection()
-                    if portName == 'exit':
-                        print('Exiting Ethernet connection process.')
+                    ether_name = self.check_ether_connection()
+                    if ether_name == 'exit':
+                        print('Exiting Ethernet transfer process.')
                     else:
-                        portNum = ''
-                        while not validPort:
-                            portNum = input("Enter IP port name for 'wi-Fi': ").strip()
+                        host_ID = ''
+                        while not valid_IP:
+                            host_ID = input("Enter IP host ID for 'wi-Fi': ").strip()
+                            
                             try:
-                                portNum = int(portNum)
+                                host_ID = int(host_ID)
                             except ValueError:
-                                portNum = 'string'
+                                host_ID = 'string'
                                 
-                            if portNum != 'string' and portNum > 0:
-                                print('Invalid Port. Enter a valid number greater than 0.\n')
+                            if host_ID != 'string' and host_ID > 0:
+                                valid_IP = True
                             else:
-                                validPort = True
+                                print('Invalid IP host ID. Enter a valid number greater than 0.')
+                                print('Ensure that host ID is available.\n')
                               
-                        subprocess.run('netsh interface ip set address name="wi-Fi" static 192.168.1.'+portNum+' 255.255.255.0 192.168.1.'+portNum)
-                        subprocess.run('netsh interface ip set address name="'+portName+'" static 192.168.1.2 255.255.255.0 192.168.1.2')
+                        subprocess.run('netsh interface ip set address name="wi-Fi" static 192.168.1.'+str(host_ID)+' 255.255.255.0 192.168.1.'+str(host_ID))
+                        subprocess.run('netsh interface ip set address name="'+str(ether_name)+'" static 192.168.1.2 255.255.255.0 192.168.1.2')
+                        subprocess.run('netsh interface ip set address name="wi-Fi" dhcp')
                         
+                        print("Transfer to",ether_name,"successful.")
                         self.ether_is_connected = True
+                        
                     done = True
+                    
                 case 'n':
                     print('Transfer to Ethernet canceled.')
                     done = True
+                    
                 case default:
-                    print("Invalid response.\n")
+                    print("Invalid response.")
                     print("Enter 'y' to transfer contest to 'Ethernet'.\nEnter 'n' to stay on 'wi-Fi' connection")
 
     def check_ether_connection(self):
         etherConnected = False
-        portName = 'exit'
-        i = 0
-        max_index, address_index = 8193, -1
+        ether_name = 'exit'
+        max_index, address_index, i = 8193, -1, 0
         etherConnections = []
         
         output = subprocess.Popen(('ipconfig'),
             stdout=subprocess.PIPE).stdout
         
         for line in output:
-            line_list = str(line)[2:-5].strip().split()
+            line_list = tuple(str(line)[2:-5].strip().split())
+            
             if 'Ethernet' in str(line) and 'adapter' in str(line):
-                portName = ''
+                ether_name = ''
                 temp = [word for word in line_list[2:]]
                 
                 for x in temp:
-                    portName += str(x) + ' '
-                portName = portName[0:-1]
-                if portName[-1:] == ':':
-                    portName = portName[0:-1]
+                    ether_name += str(x) + ' '
+                ether_name = ether_name[0:-1]
+                
+                if ether_name[-1:] == ':':
+                    ether_name = ether_name[0:-1]
                 max_index = i+2
                 
             if i == max_index:
                 if 'Media disconnected' not in str(line):
                     address_index = max_index + 2
                 else:
-                    etherConnections.append((portName,'Media disconnected'))
+                    etherConnections.append((ether_name,'Media disconnected'))
+                    
             if i == address_index:
-                etherConnections.append((portName, line_list[13]))
-                
+                etherConnections.append((ether_name, line_list[13]))
             i+=1
         
         if len(etherConnections) == 0:
             print("No Ethernet ports found. Stay on wi-Fi.")
         else:
             print("Enter '/<#>' to choose an Ethernet connection to transfer the contest to:")
+            
             index = 1
             for e in etherConnections:
-                print("\t/"+"index",e[0]+':',e[1])
+                print("\t/"+str(index),e[0],':',e[1])
                 index+=1
             print()
             
@@ -201,27 +211,31 @@ class pc2_instance:
                     response = int(response)
                     if response <= 0 or response > len(etherConnections):
                         print("Please choose one of the above options.")
-                        response2 = None
                     else:
-                        portName = etherConnections[response][1]
+                        ether_name = etherConnections[response-1][0]
+                        ether_address = etherConnections[response-1][1]
                         response2 = None
                         
-                        print("Confirm contest transfer to '"+etherConnections[response][1]+" : "+portName+"' [y/n]")
-                        while response2 == None:
+                        print("Current status of Ethernet adapter",ether_name+":",ether_address)
+                        print("Confirm contest transfer to '"+ether_name+" : "+ether_address+"' [y/n]")
+                        
+                        while response2 is None:
                             response2 = input('>>> ').strip()
                             match response2:
                                 case 'y':
-                                    self.ether_port_name = portName
-                                    return portName
+                                    self.ether_full_name = ether_name
                                 case 'n':
                                     return 'exit'
                                 case default:
                                     print("Enter 'y' to confirm transfer or 'n' to cancel.")
                                     response2 = None
+                                    
+                    etherConnected = True
+                    
                 except ValueError:
                     print("Invalid Response. Enter '/<#>' based on above options.")
-                    
-        return 'exit'
+        
+        return ether_name
 
 
 def main():
@@ -238,11 +252,11 @@ def main():
                 if pc2i.started:
                     pc2i.yn_command('netsh interface ip set address name="wi-Fi" dhcp')
                     if pc2i.ether_is_connected:
-                        pc2i.yn_command('netsh interface ip set address name="'+pc2i.ether_port_name+'" dhcp')
+                        pc2i.yn_command('netsh interface ip set address name="'+pc2i.ether_full_name+'" dhcp')
                     pc2i.toggle_firewall()
                 print("'pc2_runner.py' terminated")
             case "/c ethernet":
-                pc2i.check_ether_connection()
+                pc2i.transfer_to_ethernet()
             case "/h":
                 pc2i.get_help()
             case default:

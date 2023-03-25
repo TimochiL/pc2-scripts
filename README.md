@@ -29,6 +29,9 @@ Updated help message
 
 Implemented transfer to contest ethernet ability.
 
+Fixed ethernet transfer bugs
+Have yet to test transfer code with router
+
 # pc2_maker
 
 #### 03.18.2023
