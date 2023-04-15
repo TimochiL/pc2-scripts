@@ -1,5 +1,4 @@
-import os
-import subprocess
+import os, subprocess, time
 
 class pc2_instance:
     def __init__(self):
@@ -72,8 +71,7 @@ class pc2_instance:
             index += 1
         f.close()
         
-        print("\nCurrent server:",serv)
-            
+        print("\nCurrent server:",serv) 
         
     def get_profiles(self):
         prof_path = os.path.join(self.bin_path, 'profiles')
@@ -161,9 +159,8 @@ class pc2_instance:
                 print("Invalid response.")
              
     def transfer_to_ethernet(self): 
-        print('Ensure Ethernet is connected\n')
+        print('**Ensure Ethernet is connected before continuing transfer process.**\n')
         done = False
-        valid_IP = False
         
         while not done:
             print("Transfer contest onto Ethernet connection [y/n]")
@@ -175,26 +172,16 @@ class pc2_instance:
                     if ether_name == 'exit':
                         print('Exiting Ethernet transfer process.')
                     else:
-                        host_ID = ''
-                        while not valid_IP:
-                            host_ID = input("Enter IP host ID for 'wi-Fi': ").strip()
-                            
-                            try:
-                                host_ID = int(host_ID)
-                            except ValueError:
-                                host_ID = 'string'
-                                
-                            if host_ID != 'string' and host_ID > 0:
-                                valid_IP = True
-                            else:
-                                print('\nInvalid IP host ID. Enter a valid number greater than 0.')
-                                print('Ensure that host ID is available.\n')
-                              
-                        subprocess.run('netsh interface ip set address name="wi-Fi" static 192.168.1.'+str(host_ID)+' 255.255.255.0 192.168.1.'+str(host_ID))
+                        wifi_name = self.check_wifi_connection()
+                        
+                        subprocess.run('netsh interface ip set address name="wi-Fi" dhcp') 
+                        subprocess.run('netsh wlan disconnect')
                         subprocess.run('netsh interface ip set address name="'+str(ether_name)+'" static 192.168.1.2 255.255.255.0 192.168.1.2')
-                        subprocess.run('netsh interface ip set address name="wi-Fi" dhcp')
+                        subprocess.run('netsh wlan connect ssid="'+wifi_name[1][1]+'" name="'+wifi_name[1][2])
+                        self.wiFi_not_DHCP = False
                         
                         print("Transfer to",ether_name,"successful.")
+                        print("'wi-Fi' connection reset to DHCP.")
                         self.ether_not_DHCP = True
                         
                     done = True
@@ -238,7 +225,7 @@ class pc2_instance:
                     etherConnections.append((ether_name,'Media disconnected'))
                     
             if i == address_index:
-                etherConnections.append((ether_name, line_list[13]))
+                etherConnections.append((ether_name, line_list[-1]))
             i+=1
         
         if len(etherConnections) == 0:
@@ -251,9 +238,6 @@ class pc2_instance:
                 str_btwn = ''
                 len_btwn = 58 - len(e[0]) - len(e[1]) + 1
                 
-                spc_first = False
-                if len(e[0]) % 2 == 0:
-                    spc_first = True
                 for integer in range(len(e[0]),len(e[0])+len_btwn):
                     add_val = '.'
                     if integer % 2 == 0:
@@ -299,6 +283,128 @@ class pc2_instance:
         
         return ether_name
 
+    def check_wifi_connection(self):
+        cur_targ = None
+    
+        adap_name = ''
+        cur_wifi = None
+        cur_SSID = ''
+        is_cur_wifi = False
+        is_primary = False
+        
+        output = subprocess.Popen(('netsh wlan show interfaces'),
+            stdout=subprocess.PIPE).stdout
+        
+        for line in output:
+            line = tuple(str(line).strip()[2:-5].strip().split())
+            #print(line)
+            if len(line) == 0:
+                is_primary = False
+            elif "Name" in line:
+                adap_name =' '.join(line[2:])
+            elif line[0] == "Interface" and line[-1] == "Primary":
+                is_primary = True
+            elif line[0] == "SSID":
+                cur_SSID = ' '.join(line[2:])
+            elif "State" in line and "connected" in line:
+                is_cur_wifi = True
+            elif "Profile" in line and is_cur_wifi and is_primary:
+                cur_wifi = (adap_name, cur_SSID, ' '.join(line[2:]))
+        
+        print('Disconnecting from Wireless LAN...')
+        subprocess.run('netsh wlan disconnect')
+        time.sleep(2)
+        
+        networks = dict()
+        print("Retrieving networks...")
+        
+        for i in range(3):
+            output = subprocess.Popen(('netsh wlan show networks'),
+                stdout=subprocess.PIPE).stdout
+            time.sleep(3)
+            
+            interface_name = ''
+            
+            for line in output:
+                line = tuple(str(line).strip()[2:-5].strip().split())
+                
+                if "Interface" in line:
+                    interface_name = ' '.join(line[3:])
+                elif "SSID" in line:
+                    net_name = ' '.join(line[3:])
+                    if len(net_name) > 0:
+                        if interface_name not in networks:
+                            networks[interface_name] = {net_name}
+                        else:
+                            networks[interface_name].add(net_name)
+                
+        print("\nEnter '/<#>' to choose a Wireless LAN adapter under an interface to connect to:\n")
+        index = 1
+        for w in networks:
+            print("     Interface '"+w+"':")
+            networks[w] = tuple(networks[w])
+            for net in networks[w]:
+                str_btwn = ''
+                len_btwn = 53 - len(net) + 1
+                
+                for integer in range(len(str(index))-1,len_btwn):
+                    add_val = '.'
+                    if integer % 2 == 0:
+                        add_val = ' '
+                    str_btwn += add_val
+                print("          /"+str(index),str_btwn+net)
+                index+=1
+            print()
+            
+        print(networks)
+        
+        target_SSID = None
+        found_SSID = False
+        
+        while not found_SSID:
+            response = input('>>> ').strip()
+            if '/' not in response:
+                response = 'str'
+            else:
+                response = response[1:]
+            try:
+                response = int(response)
+                if response <= 0 or response >= index:
+                    print("Invalid Response. Enter '/<#>' based on above options.")
+                else:
+                    ind_resp = 1
+                    for inter in networks:
+                        for n in networks[inter]:
+                            if ind_resp == response:
+                                target_SSID = (inter, n)
+                            ind_resp += 1
+                    response2 = None    
+                    
+                    print("Confirm connection to network '"+target_SSID[1]+"' on interface '"+target_SSID[0]+"' [y/n]")
+                    print("To reselect, enter 'retry'.")
+                    
+                    while response2 is None:
+                        response2 = input('>>> ').strip()
+                        match response2:
+                            case 'y':
+                                cur_targ = (cur_wifi, (target_SSID[0], target_SSID[1], target_SSID[1]))
+                                found_SSID = True
+                            case 'n':
+                                cur_targ = 'exit'
+                                found_SSID = True
+                            case 'retry':
+                                print("Enter '/<#>' based on above options.")
+                            case default:
+                                print("Enter 'y' to confirm transfer or 'n' to cancel.")
+                                response2 = None
+
+            except ValueError:
+                print("Invalid Response. Enter '/<#>' based on above options.")
+        
+        subprocess.run('netsh wlan connect ssid="'+cur_wifi[1]+'" name="'+cur_wifi[2]+'"')
+        time.sleep(10)
+        
+        return cur_targ
 
 def main():
     pc2i = pc2_instance()
