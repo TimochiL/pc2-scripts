@@ -1,8 +1,8 @@
-import os, subprocess, time
+import os, subprocess, time, sys
 
 class pc2_instance:
     def __init__(self):
-        self.bin_path = 'c:\pc2-9.6.0\\bin'
+        self.bin_path = sys.argv[1] + '\\bin'
         self.set_working_path(self.bin_path)
         #self.open_teams = []
         self.server_proc = None
@@ -356,7 +356,7 @@ class pc2_instance:
                 index+=1
             print()
             
-        print(networks)
+        #print(networks)
         
         target_SSID = None
         found_SSID = False
