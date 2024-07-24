@@ -107,3 +107,7 @@ def get_pass(self, account, team_num):
 ### Added
 
 - First version of pc2_runner.py with pc2 automation of internet and firewall config and contest startup.
+
+[unreleased]: https://github.com/TimochiL/pc2-scripts/compare/1.0.2...HEAD
+[1.0.2]: https://github.com/TimochiL/pc2-scripts/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/TimochiL/pc2-scripts/tree/1.0.1
