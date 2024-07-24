@@ -9,16 +9,20 @@ class pc2_instance:
         self.server_proc = None
         self.admin_proc = None
         
+        self.started = False
+        
         self.wiFi_not_DHCP = False
         self.ether_not_DHCP = False
         self.ether_full_name = ''
     
     def get_help(self):
+        print("\n")
         print("Ensure that 'pc2_runner.py' is executed with administrator\naccess on a Windows OS\n\n")
         print("To start 'Server' and 'Admin', enter 'start'\n")
         print("To open any PC2 batch file, enter the name of the file \nwithout the leading 'PC2' or trailing '.bat' extension\n")
         print("To transfer contest from 'wi-Fi' to Ethernet connection,\nenter '/ethernet'\n")
         print("To set server configuration, enter '/set ini'\n")
+        print("To start the web application server, enter '/wti'\n")
         print("To end the script, enter 'exit'\n")
         
     def set_ini(self):
@@ -84,6 +88,8 @@ class pc2_instance:
         print("\nCurrent server:",serv)
         
     def start_contest(self):
+        self.started = True
+        
         server_path = os.path.join(self.bin_path, 'pc2server.bat')
         admin_path = os.path.join(self.bin_path, 'pc2admin.bat')
         
@@ -411,7 +417,7 @@ class pc2_instance:
     def run_web_interface(self):
         wti_dir = os.path.join(self.parent_path, 'projects\\WebTeamInterface-1.1-6456')
         ui_dir = os.path.join(wti_dir, 'WebTeamInterface-1.1\\WebContent\\WTI-UI')
-        keepCur = False
+        keep_current_files = False
         
         if os.path.isdir(wti_dir):
             # Run pc2wti.bat
@@ -475,22 +481,31 @@ class pc2_instance:
                 f.truncate()
             
             print('Name:', board_name)
-            print('Pass:', board_pass)
+            print('Pass:', board_pass, end='\n\n')
             
             # Replace main.js
             main_js_path = ''
-            while not os.path.exists(main_js_path):
+            while not os.path.exists(main_js_path) and not keep_current_files:
                 print('Please enter full path of new "main.js" path. Enter "default" to keep current file.')
                 main_js_path = input('>>> ').strip()
                 if main_js_path == 'default':
-                    keepCur = True
+                    keep_current_files = True
                 elif not (os.path.exists(main_js_path) or main_js_path[-7:] != 'main.js'):
                     print('File "'+main_js_path+'" could not found or does not include "main.js".')
-            if not keepCur:
+            if not keep_current_files:
                 os.replace(ui_dir+'\\main.js', main_js_path)
-                
+            
             # Copy assets zip file
+            keep_current_files = False
             assets_zip_path = ''
-            while not os.path.exists(assets_zip_path):
+            while not os.path.exists(assets_zip_path) and not keep_current_files:
                 print('Please enter full path of new "assets.zip". Enter "default" to keep current files.')
                 assets_zip_path = input('>>> ').strip()
+                if assets_zip_path == 'default':
+                    keep_current_files = True
+                elif not os.path.exists(assets_zip_path) and not os.path.split(assets_zip_path)[-1] == 'assets.zip':
+                    print('File "'+assets_zip_path+'" could not found or does not include "assets.zip".')
+            if not keep_current_files:
+                with ZipFile(assets_zip_path,"r") as zFile:
+                    zFile.extractall(os.path.join(ui_dir, 'assets'))
+                

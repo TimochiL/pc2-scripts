@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Released]
+## [1.0.2] - 2024-7-24
+
+### Added
+
+- Custom Web Team Interface assets zip archive unzip functionality
+- Better error handling
+
+### Fixed
+
+- pc2_instance Instantiation error
+- instance.started does not exist
+- Web Team Interface web app replace main.js and assets folder functionality 
 
 ## [1.0.1] - 2024-7-23
 
@@ -19,9 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - "pc2_runner.py" now contains only the main method
 - "README.md" to include information about deprecated features
-
-### Removed
-
 
 ## [1.0.0] - 2023-11-18
 

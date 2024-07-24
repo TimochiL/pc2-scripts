@@ -17,6 +17,7 @@ The following list contains the functions within the "pc2_instance" object and t
 - Assign paths to instance variables that will be used in other functions.
 - Change the working directory to the "bin" folder within the "pc2-9.8.0" contest folder.
 - Create instance variables for subprocesses during opening of batch files in other functions.
+- Create boolean instance variable to keep track of whether or not the contest has been previously started (refer to functions "start_contest" and "main").
 - Create boolean instance variables to keep track of whether DHCP (Dynamic Host Configuration Protocol) has been disabled for WiFi and Ethernet.
 - Create string instance variable to store the name of the ethernet service to be selected by the user in another function.
 
@@ -49,6 +50,7 @@ The following list contains the functions within the "pc2_instance" object and t
 
 **Feature:**
 
+- Set instance variable "started" to True; this value is used to keep track of whether or not the contest has been started in order to determine if the user needs to reset firewall profiles states when closing the contest.
 - Create local variables to store string paths to the server and admin batch files.
 - Call function "toggle_firewall" to change firewall settings (contest participants cannot directly connect to the server host if the host machine's firewall is not disabled).
 - Call function "yn-command" process spawning with command prompt command to manually set static IP address "192.168.1.2" to host machine instead of DHCP.
@@ -90,6 +92,7 @@ The following list contains the functions within the "pc2_instance" object and t
 - If user confirms contest transfer to ethernet connection, function "check_ether_connection" is called to begin ethernet selection process in command prompt and store the name of the selected ethernet connection.
 - If the call to function "check_ether_connection" returns the message "exit", the ethernet swap process is exited. Otherwise, function "check_wifi_connection" is called to begin WiFi connection selection process and retrieve the properties of the selected WiFi network. Then the ethernet connection and the wifi connection are swapped, transferring the contest to the ethernet connection.
 - The ethernet-wifi connections swap is a series of command line processes: (1) resetting the WiFi connection to DHCP, (2) disconnecting from the current WiFi connection, (3) connecting to the selected ethernet connection using the predefined static IP address, and (4) connecting to the selected WiFi connection.
+- The result is a DHCP WiFi connection and a static Ethernet connection. The corresponding instance variables are changed to match the IP address states. These instance variables will be used later to reset IP address to DHCP (refer to main function).
 - A swap confirmation message is displayed to terminal.
 
 ### check_ether_connection(self)
@@ -135,3 +138,15 @@ The following list contains the functions within the "pc2_instance" object and t
 - The INI configuration file is then rewritten line by line. The lines containing configurations for the web app scoreboard name and password are modified according to the user's previous scoreboard name and password input responses.
 - In order to add a custom web team interface web application button for contest participants to download a sample data archive, a new "main.js" file must be created to replace the default JavaScript file, since the web app is built dynamically.
 - The user is given the option of using the default "main.js" file or entering the path to the new "main.js" file. Similarly, if the assets folder is not found, the user is asked to enter the path to the new assets folder.
+
+### main
+
+**Feature:**
+
+- Constantly listens for commands "start", "exit", "/ethernet", "/wti", "/ini", "/h", and batch file name command.
+- Each command calls their corresponding methods in the pc2 object instance.
+
+**Structures:**
+
+- The "exit" command allows the user to reset or maintain network settings that may have been changed during the contest running process. The command calls function "yn_command" if the WiFi IP and or Ethernet IP addresses are static in order to reset the static IP addresses to dynamic IP addresses.
+- If the contest has been started, function "toggle_firewall" is called such that the user may optionally reset or maintain the same firewall profiles states.

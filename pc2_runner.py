@@ -32,4 +32,7 @@ def main():
                 pc2i.run_other(command)
                     
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except:
+        print("\nContest process terminated unexpectedly. Please restart contest.\n")
