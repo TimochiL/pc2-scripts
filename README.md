@@ -8,11 +8,11 @@ To ensure compatability, only use pc2_runner.py for pc2 version 9.6.0 and 9.8.0 
 
 Run "pc2_runner.py" through cmd with administrator access
 
-### Current Issues
-
-- Ethernet connection and wifi swap functionality
-- Web app scoreboard functionality
-
 ## Script Demo
 
 Currently unavailable.
+
+## Current Issues
+
+- Ethernet connection and wifi swap functionality
+- Web app scoreboard functionality
