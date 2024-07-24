@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Released]
 
+## [1.0.1] - 2024-7-23
+
+### Added
+
+- "pc2_instance.py" contains the core module of the script (the pc2_instance object)
+- "DOCS.md" to explain the ideas behind the script and programming decsions
+- method "run_web_interface" to provide automated unzip and runnign of web UI package functionality
+
+### Changed
+
+- "pc2_runner.py" now contains only the main method
+- "README.md" to include information about deprecated features
+
+### Removed
+
+
 ## [1.0.0] - 2023-11-18
 
 ### Changed
