@@ -1,7 +1,7 @@
-import pc2_instance       
+import pc2_instance as pc2
 
 def main():
-    pc2i = pc2_instance()
+    pc2i = pc2.pc2_instance()
     command = ''
     pc2i.set_ini()
     
