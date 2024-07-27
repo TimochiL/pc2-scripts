@@ -116,11 +116,11 @@ The following list contains the functions within the "pc2_instance" object and t
 
 - The function spawns a command line process to show current available WiFi connections and store piped output.
 - For each line in the piped output, a series of conditions are evaluated in order to determine the properties of the current User-OS interface.
-    - The adapter name is identified by determining if the line in the piped output contains the keyword "Name".
-    - The current wireless network's SSID (service set identifier) is identified by determining if the line in the piped output contains the keyword "SSID".
-    - A boolean local variable is used to track if the current line being evaluated falls under the "Primary" network category.
-    - Another boolean local variable is used to confirm if the host machine is connected to the network under evaluation.
-    
+  - The adapter name is identified by determining if the line in the piped output contains the keyword "Name".
+  - The current wireless network's SSID (service set identifier) is identified by determining if the line in the piped output contains the keyword "SSID".
+  - A boolean local variable is used to track if the current line being evaluated falls under the "Primary" network category.
+  - Another boolean local variable is used to confirm if the host machine is connected to the network under evaluation.
+
     If the two conditions "is_primary" and "is_cur_wifi" are met and the line contains the keyword "Profile", a tuple containing the identified adapter name, SSID, and profile name is stored in a local variable.
 - The host device is disconnected from the current WiFi connection.
 - A new command line process is spawned to retrieve the list of available networks and store the piped output.
@@ -133,17 +133,24 @@ The following list contains the functions within the "pc2_instance" object and t
 
 **Feature:**
 
-- If the web team interface archive has been unzipped, the path to batch file "pc2wti.bat" will exist, and the batch file will be run by spawning a new process. Otherwise the web team interface zip file contents are extracted and the INI configuration file "pc2v9.ini" that exists as part of the web team interface package undergoes modifications to successfull start the web application.
+- If the web team interface archive has been unzipped, the path to batch file "pc2wti.bat" will exist, and the batch file will be run by spawning a new process. Otherwise the web team interface zip file contents are extracted and the INI configuration file "pc2v9.ini" that exists as part of the web team interface package undergoes modifications to successfully start the web application by calling function "modify_web_interface", depending on the user's response.
+
+### modify_web_interface(self)
+
+**Feature:**
+
+- The function is called either after extracting the contents of the web interface or as a custom command using "/wti"
+- The function first sets the working directory to the parent folder of the bin directory, from which the jar file will later be called by the batch file.
 - The user must input and confirm the desired scoreboard name and password.
 - The INI configuration file is then rewritten line by line. The lines containing configurations for the web app scoreboard name and password are modified according to the user's previous scoreboard name and password input responses.
-- In order to add a custom web team interface web application button for contest participants to download a sample data archive, a new "main.js" file must be created to replace the default JavaScript file, since the web app is built dynamically.
-- The user is given the option of using the default "main.js" file or entering the path to the new "main.js" file. Similarly, if the assets folder is not found, the user is asked to enter the path to the new assets folder.
+- In order to add a custom web team interface web application button for contest participants to download a sample data archive, a new "main.js" file must be created to replace the default JavaScript file, since the web app is built dynamically. The user is given the option of using the default "main.js" file or entering the path to the new "main.js" file.
+- Similarly, the user has the option of selecting a new assets folder by entering the path to an assets zip archive, replacing the original assets with new assets. Entering "default" will preserve the original assets folder.
 
 ### main
 
 **Feature:**
 
-- Constantly listens for commands "start", "exit", "/ethernet", "/wti", "/ini", "/h", and batch file name command.
+- Constantly listens for commands "start", "exit", "/ethernet", "/wti", "/set wti", "/ini", "/h", and batch file name command.
 - Each command calls their corresponding methods in the pc2 object instance.
 
 **Structures:**

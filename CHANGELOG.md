@@ -5,7 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.2] - 2024-7-24
+## [Unreleased]
+
+## [1.0.3] - 2024-07-26
+
+### Added
+
+- Command to modify Web Interface and UI apart from after unzipping WTI zip archive
+
+### Changed
+
+- More specific and easier to read error messages
+- Modifications to Web Interface batch file and UI occur in function "modify_web_interface"
+- DOCS.md to reflect function modifications
+- Script help message
+
+### Fixed
+
+- Incorrect path to pc2wti.bat after unzip
+- Working path and zip path hell
+- Cannot access Web Team Interface .jar file (working directory must be parent folder of bin)
+
+## [1.0.2] - 2024-07-24
 
 ### Added
 
@@ -18,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - instance.started does not exist
 - Web Team Interface web app replace main.js and assets folder functionality 
 
-## [1.0.1] - 2024-7-23
+## [1.0.1] - 2024-07-23
 
 ### Added
 
@@ -107,3 +128,8 @@ def get_pass(self, account, team_num):
 ### Added
 
 - First version of pc2_runner.py with pc2 automation of internet and firewall config and contest startup.
+
+[unreleased]: https://github.com/TimochiL/pc2-scripts/compare/1.0.3...HEAD
+[1.0.3]: https://github.com/TimochiL/pc2-scripts/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/TimochiL/pc2-scripts/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/TimochiL/pc2-scripts/tree/1.0.1
