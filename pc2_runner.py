@@ -19,11 +19,13 @@ def main():
                     pc2i.yn_command('netsh interface ip set address name="'+pc2i.ether_full_name+'" dhcp')
                 if pc2i.started:
                     pc2i.toggle_firewall()
-                print("'pc2_runner.py' terminated")
+                print("'pc2_runner.py' terminated by user.")
             case "/ethernet":
                 pc2i.transfer_to_ethernet()
             case "/wti":
                 pc2i.run_web_interface()
+            case "/set wti":
+                pc2i.modify_web_interface()
             case "/set ini":
                 pc2i.set_ini()
             case "/h":
@@ -34,5 +36,17 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except:
-        print("\nContest process terminated unexpectedly. Please restart contest.\n")
+    except Exception as ex:
+        errorTypeTemplate = "\tException {0} occurred"
+        errorArgsTemplate = "\t{0}"
+        errorTypeMessage = errorTypeTemplate.format(type(ex).__name__)
+        if len(ex.args) > 1:
+            errorArgsMessage = errorArgsTemplate.format(ex.args[1])
+        else:
+            errorArgsMessage = errorArgsTemplate.format("Contest process terminated unexpectedly")
+        
+        errorCharacterWidth = max(len(errorTypeMessage), len(errorArgsMessage)) + 16 # Width of tab is 8 characters
+        errorSeparatorLine = ''.join(['-']*errorCharacterWidth)
+        
+        print()
+        print(errorSeparatorLine, errorTypeMessage, errorArgsMessage, errorSeparatorLine, sep='\n\n')

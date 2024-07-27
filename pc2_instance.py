@@ -22,8 +22,9 @@ class pc2_instance:
         print("To open any PC2 batch file, enter the name of the file \nwithout the leading 'PC2' or trailing '.bat' extension\n")
         print("To transfer contest from 'wi-Fi' to Ethernet connection,\nenter '/ethernet'\n")
         print("To set server configuration, enter '/set ini'\n")
-        print("To start the web application server, enter '/wti'\n")
-        print("To end the script, enter 'exit'\n")
+        print("To start the web interface server, enter '/wti'\n")
+        print("To configure the web interface INI configuration file and UI, enter '/set wti'\n")
+        print("To terminate the script, enter 'exit'\n")
         
     def set_ini(self):
         self.get_ini_config()
@@ -102,7 +103,6 @@ class pc2_instance:
             stdout=subprocess.PIPE)
         output = self.server_proc.stdout
         
-        # Maybe try await async?????
         prof_path = os.path.join(self.bin_path, 'profiles')
         profiles = os.listdir(prof_path)
         
@@ -363,8 +363,6 @@ class pc2_instance:
                 print("          /"+str(index),str_btwn+net)
                 index+=1
             print()
-            
-        #print(networks)
         
         target_network = None
         found_SSID = False
@@ -415,97 +413,121 @@ class pc2_instance:
         return cur_targ
     
     def run_web_interface(self):
-        wti_dir = os.path.join(self.parent_path, 'projects\\WebTeamInterface-1.1-6456')
-        ui_dir = os.path.join(wti_dir, 'WebTeamInterface-1.1\\WebContent\\WTI-UI')
-        keep_current_files = False
+        projects_dir = os.path.join(self.parent_path, 'projects')
+        zip_dir = os.path.join(projects_dir, 'WebTeamInterface-1.1-6456')
+        wti_dir = os.path.join(projects_dir, 'WebTeamInterface-1.1')
         
         if os.path.isdir(wti_dir):
             # Run pc2wti.bat
             subprocess.Popen(
-                (wti_dir+'\\WebTeamInterface-1.1\\bin\\pc2wti.bat'),
+                (wti_dir+'\\bin\\pc2wti.bat'),
                 stdout=subprocess.PIPE)
         else:
             # Unzip web interface
-            with ZipFile(wti_dir+'.zip', "r") as zFile:
-                zFile.extractall(wti_dir)
+            with ZipFile(zip_dir+'.zip', "r") as zFile:
+                zFile.extractall(projects_dir)
             
-            # Edit scoreboard pc2v9.ini ------ account name: index 26, password: index 27
-            ini_path = os.path.join(wti_dir, 'WebTeamInterface-1.1', 'pc2v9.ini')
-            index = 0
-            output = ''
-            board_name = board_pass = None
+            print('"'+zip_dir+'.zip"','unzipped successfully.',end='\n\n')
             
-            while board_name is None:
-                print('Please enter the name of the scoreboard account.')
-                board_name = input('>>> ').strip()
-                response = None
-                while response is None:
-                    print('Confirm "'+board_name+'" as WTI scoreboard account? [y/n]')
-                    response = input('>>> ').strip().lower()
-                    match response:
-                        case 'y':
-                            pass
-                        case 'n':
-                            board_name = None
-                        case default:
-                            print('Invalid response.')
-                            response = None
-                            
-            while board_pass is None:
-                print('Please enter the password of the scoreboard account.')
-                board_pass = input('>>> ').strip()
-                response = None
-                while response is None:
-                    print('Confirm "'+board_pass+'" as WTI scoreboard account? [y/n]')
-                    response = input('>>> ').strip().lower()
-                    match response:
-                        case 'y':
-                            pass
-                        case 'n':
-                            board_pass = None
-                        case default:
-                            print('Invalid response.')
-                            response = None 
-            
-            with open(ini_path, "r+") as f:
-                for line in f:
-                    if index < 26 or index > 27:
-                        output += str(line)
-                    elif index == 26:
-                        output += 'wtiscoreboardaccount=' + board_name + '\n'
-                    elif index == 27:
-                        output += 'wtiscoreboardpassword=' + board_pass + '\n'
-                    index += 1
-                f.seek(0)
-                f.write(output)
-                f.truncate()
-            
-            print('Name:', board_name)
-            print('Pass:', board_pass, end='\n\n')
-            
-            # Replace main.js
-            main_js_path = ''
-            while not os.path.exists(main_js_path) and not keep_current_files:
-                print('Please enter full path of new "main.js" path. Enter "default" to keep current file.')
-                main_js_path = input('>>> ').strip()
-                if main_js_path == 'default':
-                    keep_current_files = True
-                elif not (os.path.exists(main_js_path) or main_js_path[-7:] != 'main.js'):
-                    print('File "'+main_js_path+'" could not found or does not include "main.js".')
-            if not keep_current_files:
-                os.replace(ui_dir+'\\main.js', main_js_path)
-            
-            # Copy assets zip file
-            keep_current_files = False
-            assets_zip_path = ''
-            while not os.path.exists(assets_zip_path) and not keep_current_files:
-                print('Please enter full path of new "assets.zip". Enter "default" to keep current files.')
-                assets_zip_path = input('>>> ').strip()
-                if assets_zip_path == 'default':
-                    keep_current_files = True
-                elif not os.path.exists(assets_zip_path) and not os.path.split(assets_zip_path)[-1] == 'assets.zip':
-                    print('File "'+assets_zip_path+'" could not found or does not include "assets.zip".')
-            if not keep_current_files:
-                with ZipFile(assets_zip_path,"r") as zFile:
-                    zFile.extractall(os.path.join(ui_dir, 'assets'))
+            # Ask user if WTI configuration should be modified
+            userResponse = ''
+            while not userResponse:
+                print('Configure Web Interface "pc2v9.ini" and UI? [y/n]')
+                userResponse = input('>>> ').strip().lower()
+                match userResponse:
+                    case 'y':
+                        self.modify_web_interface()
+                    case 'n':
+                        print('\nTo run Web Interface, enter command "/wti" again.','To configure Web Interface "pc2wti.bat" and UI, enter command "/set wti".',sep='\n\n',end='\n\n')
+                    case default:
+                        print('Invalid response.',end='\n\n')
+    
+    def modify_web_interface(self):
+        projects_dir = os.path.join(self.parent_path, 'projects')
+        wti_dir = os.path.join(projects_dir, 'WebTeamInterface-1.1')
+        ui_dir = os.path.join(wti_dir, 'WebContent', 'WTI-UI')
+        ini_path = os.path.join(wti_dir, 'pc2v9.ini')
+        
+        os.chdir(wti_dir)
+        
+        index = 0
+        output = ''
+        board_name = board_pass = None
+        
+        keep_current_files = False
+        
+        while board_name is None:
+            print('Please enter the name of the scoreboard account.')
+            board_name = input('>>> ').strip()
+            response = None
+            while response is None:
+                print('Confirm "'+board_name+'" as WTI scoreboard account? [y/n]')
+                response = input('>>> ').strip().lower()
+                match response:
+                    case 'y':
+                        pass
+                    case 'n':
+                        board_name = None
+                    case default:
+                        print('Invalid response.')
+                        response = None
+                        
+        while board_pass is None:
+            print('Please enter the password of the scoreboard account.')
+            board_pass = input('>>> ').strip()
+            response = None
+            while response is None:
+                print('Confirm "'+board_pass+'" as WTI scoreboard account? [y/n]')
+                response = input('>>> ').strip().lower()
+                match response:
+                    case 'y':
+                        pass
+                    case 'n':
+                        board_pass = None
+                    case default:
+                        print('Invalid response.')
+                        response = None 
+        
+        with open(ini_path, "r+") as f:
+            for line in f:
+                if index < 26 or index > 27:
+                    output += str(line)
+                elif index == 26:
+                    output += 'wtiscoreboardaccount=' + board_name + '\n'
+                elif index == 27:
+                    output += 'wtiscoreboardpassword=' + board_pass + '\n'
+                index += 1
+            f.seek(0)
+            f.write(output)
+            f.truncate()
+        
+        print('Name:', board_name)
+        print('Pass:', board_pass, end='\n\n')
+        
+        # Replace main.js
+        main_js_path = ''
+        while not os.path.exists(main_js_path) and not keep_current_files:
+            print('Please enter full path of new "main.js" path. Enter "default" to keep current file.')
+            main_js_path = input('>>> ').strip()
+            if main_js_path == 'default':
+                keep_current_files = True
+            elif not os.path.exists(main_js_path) or not os.path.split(main_js_path)[-1] == 'main.js':
+                print('File "'+main_js_path+'" could not found or does not include "main.js".')
+        if not keep_current_files:
+            os.replace(ui_dir+'\\main.js', main_js_path)
+        
+        # Copy assets zip file
+        keep_current_files = False
+        assets_zip_path = ''
+        while not os.path.exists(assets_zip_path) and not keep_current_files:
+            print('Please enter full path of new "assets.zip". Enter "default" to keep current files.')
+            assets_zip_path = input('>>> ').strip()
+            if assets_zip_path == 'default':
+                keep_current_files = True
+            elif not os.path.exists(assets_zip_path) or not os.path.split(assets_zip_path)[-1] == 'assets.zip':
+                print('File "'+assets_zip_path+'" could not found or does not include "assets.zip".')
+        if not keep_current_files:
+            with ZipFile(assets_zip_path,"r") as zFile:
+                zFile.extractall(os.path.join(ui_dir, 'assets'))
                 
+        print('Configuration completed.',end='\n\n')
