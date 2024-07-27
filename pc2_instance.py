@@ -419,6 +419,7 @@ class pc2_instance:
         
         if os.path.isdir(wti_dir):
             # Run pc2wti.bat
+            os.chdir(wti_dir)
             subprocess.Popen(
                 (wti_dir+'\\bin\\pc2wti.bat'),
                 stdout=subprocess.PIPE)
