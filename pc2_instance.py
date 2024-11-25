@@ -95,7 +95,7 @@ class pc2_instance:
         admin_path = os.path.join(self.bin_path, 'pc2admin.bat')
         
         self.toggle_firewall()
-        self.yn_command('netsh interface ip set address name="wi-Fi" static 192.168.1.2 255.255.255.0 192.168.1.2')
+        self.yn_command('netsh interface ip set address name="wi-Fi" static 192.168.0.2 255.255.255.0 192.168.0.2')
         self.wiFi_not_DHCP = True
         
         self.server_proc = subprocess.Popen(
@@ -187,7 +187,7 @@ class pc2_instance:
                         
                         subprocess.run('netsh interface ip set address name="wi-Fi" dhcp') 
                         subprocess.run('netsh wlan disconnect')
-                        subprocess.run('netsh interface ip set address name="'+str(ether_name)+'" static 192.168.1.2 255.255.255.0 192.168.1.2')
+                        subprocess.run('netsh interface ip set address name="'+str(ether_name)+'" static 192.168.0.2 255.255.255.0 192.168.0.2')
                         subprocess.run('netsh wlan connect ssid="'+wifi_name[1][1]+'" name="'+wifi_name[1][1]+'"')
                         self.wiFi_not_DHCP = False
                         
@@ -419,6 +419,7 @@ class pc2_instance:
         
         if os.path.isdir(wti_dir):
             # Run pc2wti.bat
+            os.chdir(wti_dir)
             subprocess.Popen(
                 (wti_dir+'\\bin\\pc2wti.bat'),
                 stdout=subprocess.PIPE)
