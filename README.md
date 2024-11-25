@@ -18,4 +18,6 @@ Currently unavailable.
 
 ## Current Issues
 
-- Web app scoreboard functionality
+## Upcoming Features
+
+- UI
